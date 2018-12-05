@@ -1,0 +1,232 @@
+<!--
+ * Copyright © 2014 - 2018 Leipzig University (Database Research Group)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gradoop Demo | Sampling</title>
+    <link rel="stylesheet" href="../stylesheets/spectre.min.css" />
+    <link rel="stylesheet" href="../stylesheets/spectre-exp.min.css" />
+    <link rel="stylesheet" href="../stylesheets/spectre-icons.min.css" />
+    <link rel="stylesheet" type="text/css" href="../stylesheets/jquery.qtip.css">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/layout.css">
+
+    <script src="../javascript/jquery-1.11.3.min.js"></script>
+    <script src="../javascript/cytoscape/cytoscape.min.js"></script>
+    <script src="../javascript/cytoscape/cytoscape-qtip.js"></script>
+    <script src="../javascript/jquery.qtip.min.js"></script>
+    <script src="../javascript/cytoscape/dagre.js"></script>
+    <script src="../javascript/cytoscape/cytoscape-dagre.js"></script>
+    <script src="../javascript/select2.full.min.js"></script>
+
+    <script src="../javascript/sampling.js"></script>
+</head>
+<body>
+<header class="page-header">
+    <section class="container">
+        <nav class="navbar">
+            <section class="navbar-section">
+                <a href="/">
+                    <img src="../images/gradoop.svg" class="navbar-logo">
+                </a>
+                <a href="grouping.html" class="btn btn-link">Grouping</a>
+                <a href="cypher.html" class="btn btn-link">Cypher</a>
+                <a href="sampling.html" class="btn btn-link">Sampling</a>
+            </section>
+            <section class="navbar-section">
+            </section>
+        </nav>
+    </section>
+</header>
+<section class="navbar-spacer">&nbsp;</section>
+
+<div class="content-wrapper">
+    <div class="container">
+        <div class="columns">
+            <div class="column col-4">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Graph Sampling</div>
+                    </div>
+                    <div class="panel-body">
+                        <form id="sampling-query-form">
+                            <fieldset>
+                                <div class="header">
+                                    Input Parameters
+                                    <hr>
+                                </div>
+
+                                <div class="form-sample">
+                                    <label class="form-label" for="databaseName">Graph</label>
+                                    <div class="input-sample">
+                                        <select class="form-select" id="databaseName" name="database_name" style="width:50%">
+                                            <option value="Small">Small</option>
+                                            <option value="Big">Big</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-sample">
+                                    <label class="form-label" for="samplingType">Sampling Type</label>
+                                    <div class="input-sample">
+                                        <select class="form-select" id="samplingType" name="sampling_type" style="width:50%">
+                                            <option value="vertex">Vertex Sampling</option>
+                                            <option value="edge">Random Edge Sampling</option>
+                                            <option value="vertex_edge">Random Vertex Edge Sampling</option>
+                                            <option value="vertex_neighborhood">Random Vertex Neighborhood Sampling</option>
+                                            <option value="non_uniform_vertex">Random Non Uniform Vertex Sampling</option>
+                                            <option value="limited_degree_vertex">Random Limited Degree Vertex Sampling</option>
+                                            <option value="page_rank">Page Rank Sampling</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-sample form-sample-input vertex_neighborhood" style="display: none;">
+                                    <label class="form-label" for="neighborhoodType">Sampling Type</label>
+                                    <div class="input-sample">
+                                        <select class="form-select property-input" id="neighborhoodType" name="neighborhood_type" style="width:50%">
+                                            <option value="in">In</option>
+                                            <option value="out">Out</option>
+                                            <option value="both">Both</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-sample form-sample-input vertex_edge" style="display: none;">
+                                    <label class="form-label" for="vertexEdgeSamplingType">Sampling Type</label>
+                                    <div class="input-sample">
+                                        <select class="form-select property-input" id="vertexEdgeSamplingType" name="vertex_edge_sampling_type" style="width:50%">
+                                            <option value="simple_version">Simple Version</option>
+                                            <option value="nonuniform_version">Nonuniform Version</option>
+                                            <option value="nonuniform_hybrid_version">Nonuniform Hybrid Version</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-sample form-sample-input limited_degree_vertex" style="display: none;">
+                                    <label class="form-label" for="vertexDegreeType">Sampling Type</label>
+                                    <div class="input-sample">
+                                        <select class="form-select property-input" id="vertexDegreeType" name="vertex_degree_type" style="width:50%">
+                                            <option value="simple_version">In</option>
+                                            <option value="nonuniform_version">Out</option>
+                                            <option value="nonuniform_hybrid_version">Both</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-sample form-sample-input vertex edge vertex_neighborhood non_uniform_vertex limited_degree_vertex page_rank">
+                                    <label class="form-label" for="samplingThreshold">Sampling Threshold</label>
+                                    <input type="text" class="float-input property-input" id="samplingThreshold" name="sampling_threshold" multiple style="width:50%" value="0.5">
+                                </div>
+
+                                <div class="form-sample form-sample-input vertex_edge">
+                                    <label class="form-label" for="vertexSamplingThreshold">Vertex Sampling Threshold</label>
+                                    <input type="text" class="float-input property-input" id="vertexSamplingThreshold" name="vertex_sampling_threshold" multiple style="width:50%" value="0.5">
+                                </div>
+
+                                <div class="form-sample form-sample-input vertex_edge">
+                                    <label class="form-label" for="edgeSamplingThreshold">Edge Sampling Threshold</label>
+                                    <input type="text" class="float-input property-input" id="edgeSamplingThreshold" name="edge_sampling_threshold" multiple style="width:50%" value="0.5">
+                                </div>
+
+                                <div class="form-sample form-sample-input limited_degree_vertex">
+                                    <label class="form-label" for="vertexDegreeThreshold">Vertex Degree Threshold</label>
+                                    <input type="text" class="int-input property-input" id="vertexDegreeThreshold" name="vertex_degree_threshold" multiple style="width:50%" value="0">
+                                </div>
+
+                                <div class="form-sample form-sample-input page_rank">
+                                    <label class="form-label" for="dampeningFactor">Dampening Factor</label>
+                                    <input type="text" class="float-input property-input" id="dampeningFactor" name="dampening_factor" multiple style="width:50%" value="0.5">
+                                </div>
+
+                                <div class="form-sample form-sample-input page_rank">
+                                    <label class="form-label" for="vertexDegreeThreshold">Maximum Number of Iterations</label>
+                                    <input type="text" class="int-input property-input" id="maxIterations" name="max_iterations" multiple style="width:50%" value="10">
+                                </div>
+
+                                <div class="form-sample form-sample-input page_rank">
+                                    <label class="form-switch" for="sampleGreaterThreshold">
+                                        <input type="checkbox" class="property-input" id="sampleGreaterThreshold" name="sample_greater_threshold" value="true">
+                                        <i class="form-icon"></i> Sample Vertices With Values Greater Than Threshold
+                                    </label>
+                                </div>
+                                <div class ="form-sample form-sample-input page_rank">
+                                    <label class="form-switch" for="keepVerticesSameScore">
+                                        <input type="checkbox" class="property-input" id="keepVerticesSameScore" name="keep_vertices_same_score" value="true">
+                                        <i class="form-icon"></i> Keep Vertices With Same Score
+                                    </label>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-primary btn-block" id="execute-button">Execute</button>
+                    </div>
+                </div>
+            </div>
+            <div class="column col-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="canvas"></div>
+                    </div>
+                    <div class="card-footer">
+                        <h5>View options</h5>
+                        <label class="form-switch" for="showVertexLabels">
+                            <input type="checkbox" id="showVertexLabels" name="showVertexLabels" value="true" class="redraw">
+                            <i class="form-icon"></i> Show Vertex Labels
+                        </label>
+                        <label class="form-switch" for="showEdgeLabels">
+                            <input type="checkbox" id="showEdgeLabels" name="showEdgeLabels" value="true" class="redraw">
+                            <i class="form-icon"></i> Show Edge Labels
+                        </label>
+                        <label class="form-switch" for="showCountAsSize">
+                            <input type="checkbox" id="showCountAsSize" name="showCountAsSize" value="true" class="redraw">
+                            <i class="form-icon"></i> Adaptive element size
+                            <span class="option-tooltip tooltip tooltip-top" data-tooltip="Requires count aggregate functions.">?</span>
+                        </label>
+                        <label class="form-switch" for="hideNullGroups">
+                            <input type="checkbox" id="hideNullGroups" name="hideNullGroups" value="true" class="redraw">
+                            <i class="form-icon"></i> Hide NULL groups
+                        </label>
+                        <label class="form-switch" for="hideDisconnected">
+                            <input type="checkbox" id="hideDisconnected" name="hideDisconnected" value="true" class="redraw">
+                            <i class="form-icon"></i> Hide disconnected vertices
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <p>
+            <a href="https://github.com/dbs-leipzig/gradoops"> Github </a>
+            |
+            Gradoop Version 0.4.0
+            |
+            Demo Version 0.2.0
+        </p>
+        <p>
+            Licensed under the <a href="https://github.com/dbs-leipzig/gradoop/blob/master/LICENSE" >Apache 2.0 License</a>.
+        </p>
+    </div>
+</footer>
+</body>
+</html>
