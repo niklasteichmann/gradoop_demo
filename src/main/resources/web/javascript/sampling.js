@@ -31,7 +31,9 @@ let colorMap = {};
 /**
  * Buffers the last graph response from the server to improve redrawing speed.
  */
-let bufferedData;
+let wholeBufferedData;
+
+let partialBufferedData;
 
 /**
  * True, if the graph layout should be force based
@@ -86,7 +88,7 @@ $(document).on("change", "#databaseName", function () {
  * Whenever one of the view options is changed, redraw the graph
  */
 $(document).on("change", '.redraw', function () {
-    drawGraph(bufferedData, false);
+    drawGraph(partialBufferedData, false);
 });
 
 /**
@@ -114,6 +116,11 @@ $(document).on("click", "#execute-button", function () {
             btn.removeClass('loading');
         }
     });
+});
+
+$(document).on("click",'#resetGraph', function(e) {
+    e.preventDefault();
+    drawGraph(wholeBufferedData, false);
 });
 
 $(document).on("change", "#samplingType", showCorrectInputs);
@@ -181,7 +188,7 @@ function buildCytoscape() {
                 // define label content and font
                 'content': function (node) {
 
-                    if ($('#showVertexLabels').is(':checked'))
+                    if (!$('#showVertexLabels').is(':checked'))
                         return '';
 
                     let labelString = getLabel(node, getVertexLabelKey(), useDefaultLabel);
@@ -195,14 +202,6 @@ function buildCytoscape() {
                 },
                 // if the count shall effect the vertex size, set font size accordingly
                 'font-size': function (node) {
-                    if ($('#showCountAsSize').is(':checked')) {
-                        let count = node.data('properties')['count'];
-                        if (count != null) {
-                            count = count / maxVertexCount;
-                            // surface of vertices is proportional to count
-                            return Math.max(2, Math.sqrt(count * 10000 / Math.PI));
-                        }
-                    }
                     return 10;
                 },
                 'text-valign': 'center',
@@ -232,26 +231,10 @@ function buildCytoscape() {
                  count specifies that the vertex stands for
                  1 or more other vertices */
                 'width': function (node) {
-                    if ($('#showCountAsSize').is(':checked')) {
-                        let count = node.data('properties')['count'];
-                        if (count !== null) {
-                            count = count / maxVertexCount;
-                            // surface of vertex is proportional to count
-                            return Math.sqrt(count * 1000000 / Math.PI) + 'px';
-                        }
-                    }
                     return '60px';
 
                 },
                 'height': function (node) {
-                    if ($('#showCountAsSize').is(':checked')) {
-                        let count = node.data('properties')['count'];
-                        if (count !== null) {
-                            count = count / maxVertexCount;
-                            // surface of vertex is proportional to count
-                            return Math.sqrt(count * 1000000 / Math.PI) + 'px';
-                        }
-                    }
                     return '60px';
                 },
                 'text-wrap': 'wrap'
@@ -278,27 +261,12 @@ function buildCytoscape() {
                 },
                 // if the count shall effect the vertex size, set font size accordingly
                 'font-size': function (node) {
-                    if ($('#showCountAsSize').is(':checked')) {
-                        let count = node.data('properties')['count'];
-                        if (count !== null) {
-                            count = count / maxVertexCount;
-                            // surface of vertices is proportional to count
-                            return Math.max(2, Math.sqrt(count * 10000 / Math.PI));
-                        }
-                    }
                     return 10;
                 },
                 'line-color': '#999',
                 // width of edges can be determined by property count
                 // count specifies that the edge represents 1 or more other edges
                 'width': function (edge) {
-                    if ($('#showCountAsSize').is(':checked')) {
-                        let count = edge.data('properties')['count'];
-                        if (count !== null) {
-                            count = count / maxEdgeCount;
-                            return Math.sqrt(count * 1000);
-                        }
-                    }
                     return 2;
                 },
                 'target-arrow-shape': 'triangle',
@@ -350,10 +318,12 @@ function drawGraph(data, initial = true) {
     let nodes = data.nodes;
     let edges = data.edges;
 
-    // buffer the data to speed up redrawing
-    bufferedData = data;
 
     if (initial) {
+
+        // buffer the data to speed up redrawing
+        wholeBufferedData = data;
+        partialBufferedData = data;
 
         // compute maximum count of all vertices, used for scaling the vertex sizes
         maxVertexCount = nodes.reduce((acc, node) => {
@@ -378,23 +348,21 @@ function drawGraph(data, initial = true) {
         cy.add(edges);
     } else {
 
+        partialBufferedData = data;
         // fade all elements, then un-fade all elements that are returned by the sampling
         cy.elements().addClass('faded');
 
+        let n;
         for(let i = 0; i < nodes.length; i++){
-            let n = nodes[i];
+            n = nodes[i];
             cy.nodes('node[id="' + n['data']['id'] + '"]').removeClass('faded');
         }
 
-        for(let i = 0; i < nodes.length; i++){
-            let e = edges[i];
+        let e;
+        for(let i = 0; i < edges.length; i++){
+            e = edges[i];
             cy.edges('edge[id="' + e['data']['id'] + '"]').removeClass('faded');
         }
-    }
-
-
-    if ($('#hideNullGroups').is(':checked')) {
-        hideNullGroups();
     }
 
     if ($('#hideDisconnected').is(':checked')) {
@@ -552,32 +520,6 @@ function addQtip() {
             classes: 'MyQtip'
         }
     });
-}
-
-/**
- * Hide all vertices and edges, that have a NULL property.
- */
-function hideNullGroups() {
-    let vertexKeys = getValues("#vertexPropertyKeys");
-    let edgeKeys = getValues("#edgePropertyKeys");
-
-    let nodes = [];
-    for (let i = 0; i < cy.nodes().length; i++) {
-        nodes[i] = cy.nodes()[i]
-    }
-
-    let edges = [];
-    for (let i = 0; i < cy.edges().length; i++) {
-        edges[i] = cy.edges()[i];
-    }
-
-    nodes
-        .filter(node => vertexKeys.find((key) => node.data().properties[key] === "NULL"))
-        .forEach(node => node.remove());
-
-    edges
-        .filter(edge => edgeKeys.find((key) => edge.data().properties[key] === "NULL"))
-        .forEach(edge => edge.remove());
 }
 
 /**

@@ -539,7 +539,7 @@ public class RequestHandler {
           "Vertex edge ampling type " + samplingTypeString + " is not valid.");
     }
     return graph.sample(new RandomVertexEdgeSampling(
-      Float.parseFloat(request.getProperty("vertex_sampling_treshold")),
+      Float.parseFloat(request.getProperty("vertex_sampling_threshold")),
       Float.parseFloat(request.getProperty("edge_sampling_threshold")),
       samplingType
     ));
