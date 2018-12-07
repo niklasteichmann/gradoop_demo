@@ -118,7 +118,7 @@ $(document).on("click", "#execute-button", function () {
     });
 });
 
-$(document).on("click",'#resetGraph', function(e) {
+$(document).on("click", '#resetGraph', function (e) {
     e.preventDefault();
     drawGraph(wholeBufferedData, false);
 });
@@ -353,13 +353,13 @@ function drawGraph(data, initial = true) {
         cy.elements().addClass('faded');
 
         let n;
-        for(let i = 0; i < nodes.length; i++){
+        for (let i = 0; i < nodes.length; i++) {
             n = nodes[i];
             cy.nodes('node[id="' + n['data']['id'] + '"]').removeClass('faded');
         }
 
         let e;
-        for(let i = 0; i < edges.length; i++){
+        for (let i = 0; i < edges.length; i++) {
             e = edges[i];
             cy.edges('edge[id="' + e['data']['id'] + '"]').removeClass('faded');
         }
@@ -697,7 +697,8 @@ function buildPropertiesArray() {
     let properties = [];
     $(".property-input").each(function () {
         let input = $(this);
-        properties.push(input.attr('name') + ':' + input.val());
+        if (input.is(':visible'))
+            properties.push(input.attr('name') + ':' + input.val());
     });
     return properties;
 }

@@ -604,9 +604,9 @@ public class RequestHandler {
 
   private Response getResponse(List<GraphHead> resultHead, List<Vertex> resultVertices, List<Edge> resultEdges) {
     try {
-      System.out.println("Starting");
+      System.out.println("Starting Flink Job");
       ENV.execute();
-      System.out.println("Finishing");
+      System.out.println("Finishing Flink Job");
       // build the response JSON from the collections
       String json = CytoJSONBuilder.getJSONString(resultHead, resultVertices, resultEdges);
       return Response.ok(json).build();
