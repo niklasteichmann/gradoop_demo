@@ -622,6 +622,8 @@ public class RequestHandler {
     switch (dbName) {
       case "Small":
         return RequestHandler.class.getResource("/data/Small");
+      case "Medium":
+        return RequestHandler.class.getResource("/data/Medium");
       case "Big":
         return RequestHandler.class.getResource("/data/Big");
       default:
